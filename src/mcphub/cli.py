@@ -533,5 +533,15 @@ def doctor() -> None:
     doctor_check(console)
 
 
+@app.command()
+def tui() -> None:
+    """Launch the interactive terminal UI."""
+    try:
+        from mcphub.tui import run_tui
+        run_tui()
+    except ImportError:
+        console.print("[red]textual not installed.[/] Run: pip install mcphub[tui]")
+
+
 if __name__ == "__main__":
     app()

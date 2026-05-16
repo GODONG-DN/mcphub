@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcphub"
 version = "0.5.0"
-description = "One-stop toolkit for the MCP ecosystem â€?install, configure, and build MCP servers"
+description = "One-stop toolkit for the MCP ecosystem ï¿½?install, configure, and build MCP servers"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
@@ -41,6 +41,9 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "ruff>=0.3",
+]
+tui = [
+    "textual>=0.80",
 ]
 
 [project.scripts]
