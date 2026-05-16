@@ -14,6 +14,8 @@ from mcphub.profile import ProfileManager
 from mcphub.registry import Registry
 from mcphub.runner import Runner
 from mcphub.scaffold import Scaffolder
+from mcphub.doctor import run_check as doctor_check
+from mcphub.tester import run_test as test_server
 
 app = typer.Typer(
     name="mcphub",
@@ -419,6 +421,32 @@ def completion(
         [sys.executable, "-m", "mcphub", "--show-completion", shell],
         check=False,
     )
+
+
+# -------------------------------------------------------
+#  test
+# -------------------------------------------------------
+
+@app.command()
+def test(
+    name: str = typer.Argument(..., help="MCP server name to test"),
+) -> None:
+    """Connect to an MCP server and list its tools."""
+    entry = registry.get(name)
+    if entry is None:
+        console.print(f"[red]Unknown server:[/] {name}")
+        raise typer.Exit(1)
+    test_server(console, entry)
+
+
+# -------------------------------------------------------
+#  doctor
+# -------------------------------------------------------
+
+@app.command()
+def doctor() -> None:
+    """Check your system for MCP development prerequisites."""
+    doctor_check(console)
 
 
 if __name__ == "__main__":

@@ -79,13 +79,16 @@ mcphub dev my-cool-tool
 |---------|-------------|
 | `mcphub list [--tag]` | List all available MCP servers |
 | `mcphub search <kw>` | Search by name, description, or tag |
-| `mcphub sync [--url]` | Pull the latest registry from remote |
+| `mcphub sync` | Pull the latest registry from remote |
 | `mcphub info <name>` | Show details: repo, command, env vars |
 | `mcphub install <name>` | Install and auto-configure AI clients |
 | `mcphub run <name>` | Launch an installed MCP server |
+| `mcphub test <name>` | Connect and list all tools a server exposes |
 | `mcphub uninstall <name>` | Remove the server and clean up configs |
 | `mcphub config [--list]` | Show AI client config locations and entries |
+| `mcphub profile` | Save/load/delete sets of server configs |
 | `mcphub dev <name>` | Scaffold a new MCP server project |
+| `mcphub doctor` | Check your system for MCP prerequisites |
 
 ---
 
@@ -106,12 +109,12 @@ If your client isn't detected, `mcphub install` prints the exact JSON snippet to
 
 ## Built-in Registry
 
-17 MCP servers indexed out of the box:
+27 MCP servers indexed out of the box:
 
 | Category | Servers |
 |----------|---------|
-| **Official** | filesystem, github, brave-search, memory, puppeteer, postgres, slack, sqlite, docker, sequential-thinking, fetch, git, everything |
-| **Community** | mcp-hfspace (HuggingFace), mermaid, notion, playwright |
+| **Official** | filesystem, github, brave-search, memory, puppeteer, postgres, slack, sqlite, docker, sequential-thinking, fetch, git, everything, google-maps, youtube, everart |
+| **Community** | mcp-hfspace, mermaid, notion, playwright, exa, tavily, perplexity, figma, linear, obsidian, jira |
 
 Run `mcphub sync` to pull updates we add between releases.
 
@@ -132,10 +135,10 @@ Gives you a working MCP server with a `hello` tool — ready to extend.
 
 ## Roadmap
 
-- [ ] `mcphub test` — test tools against an MCP server
-- [ ] Community registry submissions
-- [ ] VS Code / JetBrains extensions
-- [ ] Health-check dashboard for running servers
+- [ ] Community registry submissions via PR
+- [ ] VS Code extension with GUI
+- [ ] Web dashboard for managing running servers
+- [ ] `mcphub publish` — push your own server to the registry
 
 ---
 
