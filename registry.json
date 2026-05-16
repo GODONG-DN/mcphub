@@ -186,5 +186,116 @@
     "command": "npx",
     "args": ["-y", "@executeautomation/playwright-mcp-server"],
     "tags": ["browser", "testing", "community"]
+  },
+  {
+    "name": "exa",
+    "description": "AI-powered web search via Exa API",
+    "repo": "exa-labs/exa-mcp-server",
+    "type": "npm",
+    "package": "@anthropic/exa-mcp-server",
+    "command": "npx",
+    "args": ["-y", "@anthropic/exa-mcp-server"],
+    "env": {"EXA_API_KEY": "<your-key>"},
+    "tags": ["search", "web", "ai", "community"]
+  },
+  {
+    "name": "tavily",
+    "description": "Real-time web search via Tavily API",
+    "repo": "tavily-ai/tavily-mcp",
+    "type": "python",
+    "package": "tavily-mcp",
+    "command": "uvx",
+    "args": ["tavily-mcp"],
+    "env": {"TAVILY_API_KEY": "<your-key>"},
+    "tags": ["search", "web", "community"]
+  },
+  {
+    "name": "perplexity",
+    "description": "Perplexity Ask — AI-powered research assistant",
+    "repo": "goenning/mcp-perplexity",
+    "type": "npm",
+    "package": "@anthropic/mcp-perplexity",
+    "command": "npx",
+    "args": ["-y", "@anthropic/mcp-perplexity"],
+    "env": {"PERPLEXITY_API_KEY": "<your-key>"},
+    "tags": ["search", "ai", "research", "community"]
+  },
+  {
+    "name": "google-maps",
+    "description": "Google Maps API — geocoding, directions, places",
+    "repo": "modelcontextprotocol/servers",
+    "subdir": "src/google-maps",
+    "type": "npm",
+    "package": "@modelcontextprotocol/server-google-maps",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-google-maps"],
+    "env": {"GOOGLE_MAPS_API_KEY": "<your-key>"},
+    "tags": ["maps", "location", "official"]
+  },
+  {
+    "name": "figma",
+    "description": "Read and interact with Figma design files",
+    "repo": "ramkumarm15/mcp-figma",
+    "type": "npm",
+    "package": "mcp-figma",
+    "command": "npx",
+    "args": ["-y", "mcp-figma"],
+    "env": {"FIGMA_ACCESS_TOKEN": "<your-token>"},
+    "tags": ["design", "figma", "community"]
+  },
+  {
+    "name": "linear",
+    "description": "Linear project management — issues, cycles, projects",
+    "repo": "shannonhager/mcp-linear",
+    "type": "npm",
+    "package": "@anthropic/mcp-linear",
+    "command": "npx",
+    "args": ["-y", "@anthropic/mcp-linear"],
+    "env": {"LINEAR_API_KEY": "<your-key>"},
+    "tags": ["project-management", "linear", "community"]
+  },
+  {
+    "name": "obsidian",
+    "description": "Read, search, and edit your Obsidian vault",
+    "repo": "smithery-ai/mcp-obsidian",
+    "type": "npm",
+    "package": "@smithery-ai/obsidian",
+    "command": "npx",
+    "args": ["-y", "@smithery-ai/obsidian"],
+    "tags": ["notes", "obsidian", "community"]
+  },
+  {
+    "name": "youtube",
+    "description": "Search and retrieve YouTube video transcripts",
+    "repo": "modelcontextprotocol/servers",
+    "subdir": "src/youtube",
+    "type": "npm",
+    "package": "@modelcontextprotocol/server-youtube",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-youtube"],
+    "tags": ["youtube", "video", "transcripts", "official"]
+  },
+  {
+    "name": "everart",
+    "description": "AI image generation via EverArt API",
+    "repo": "modelcontextprotocol/servers",
+    "subdir": "src/everart",
+    "type": "npm",
+    "package": "@modelcontextprotocol/server-everart",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-everart"],
+    "env": {"EVERART_API_KEY": "<your-key>"},
+    "tags": ["image", "ai-art", "generation", "official"]
+  },
+  {
+    "name": "jira",
+    "description": "Atlassian Jira integration for tickets and boards",
+    "repo": "nitish-ku/mcp-jira-server",
+    "type": "npm",
+    "package": "mcp-jira-server",
+    "command": "npx",
+    "args": ["-y", "mcp-jira-server"],
+    "env": {"JIRA_URL": "<your-jira-url>", "JIRA_EMAIL": "<your-email>", "JIRA_API_TOKEN": "<your-token>"},
+    "tags": ["jira", "atlassian", "project-management", "community"]
   }
 ]

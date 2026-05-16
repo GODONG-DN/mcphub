@@ -32,24 +32,34 @@ class Installer:
             self.console.print(f"[red]Unknown package type:[/] {pkg_type}")
             raise SystemExit(1)
 
-        self.console.print(f"\n[green]Installed![/] Run it with:")
-        self.console.print(f"  [bold]{command} {' '.join(args)}[/]")
+        from rich import box
+        from rich.panel import Panel
 
+        content = f"  [bold]{command} {' '.join(args)}[/]"
+        if entry.get("env"):
+            content += "\n[dim]  (see env vars below)[/]"
+
+        self.console.print(
+            Panel(content, title="[bold green]Installed[/]", border_style="green", box=box.ROUNDED)
+        )
         self._print_env_reminder(entry)
 
     def _install_npm(self, name: str, package: str, force: bool) -> None:
         if not shutil.which("npm") and not shutil.which("npx"):
-            self.console.print("[red]npm/npx not found.[/] Install Node.js first: https://nodejs.org")
+            self.console.print(
+                "[red]npm/npx not found.[/] Install Node.js first: https://nodejs.org"
+            )
             raise SystemExit(1)
 
-        if not self._is_npm_installed(package) or force:
-            cmd = ["npm", "install", "-g", package]
-            if self.dry_run:
-                self.console.print(f"  [dim](dry-run) Would run:[/] {' '.join(cmd)}")
-                return
-            self._run(cmd, f"Installing {package}...")
-        else:
+        if self._is_npm_installed(package) and not force:
             self.console.print(f"  [dim]{package} already installed (use --force to reinstall)[/]")
+            return
+
+        cmd = ["npm", "install", "-g", package]
+        if self.dry_run:
+            self.console.print(f"  [dim](dry-run) Would run:[/] {' '.join(cmd)}")
+            return
+        self._run_with_spinner(cmd, f"Installing {package}")
 
     def _install_python(self, name: str, package: str, force: bool) -> None:
         ux = shutil.which("uvx") or shutil.which("uv")
@@ -62,13 +72,13 @@ class Installer:
             if self.dry_run:
                 self.console.print(f"  [dim](dry-run) Would run:[/] {' '.join(cmd)}")
                 return
-            self._run(cmd, f"Installing {package} via uv...")
+            self._run_with_spinner(cmd, f"Installing {package} via uv")
         elif pip:
             cmd = [pip, "install", "-U", package]
             if self.dry_run:
                 self.console.print(f"  [dim](dry-run) Would run:[/] {' '.join(cmd)}")
                 return
-            self._run(cmd, f"Installing {package} via pip...")
+            self._run_with_spinner(cmd, f"Installing {package} via pip")
         else:
             self.console.print("[red]Neither uv nor pip found.[/]")
             raise SystemExit(1)
@@ -84,22 +94,27 @@ class Installer:
         except Exception:
             return False
 
-    def _run(self, cmd: list[str], message: str) -> None:
-        self.console.print(f"  {message}")
-        try:
-            subprocess.run(cmd, check=True)
-        except subprocess.CalledProcessError as e:
-            self.console.print(f"[red]Command failed:[/] {' '.join(cmd)}")
-            raise SystemExit(e.returncode)
+    def _run_with_spinner(self, cmd: list[str], status_msg: str) -> None:
+        from rich.status import Status
+
+        with self.console.status(f"[bold]{status_msg}[/]", spinner="dots"):
+            try:
+                subprocess.run(cmd, check=True, capture_output=True, text=True)
+            except subprocess.CalledProcessError as e:
+                self.console.print(f"[red]Command failed:[/] {' '.join(cmd)}")
+                if e.stderr:
+                    self.console.print(f"[dim]{e.stderr.strip()}[/]")
+                raise SystemExit(e.returncode)
 
     def _print_env_reminder(self, entry: dict) -> None:
         env_vars = entry.get("env", {})
         if not env_vars:
             return
-        self.console.print("\n[yellow]This server needs environment variables:[/]")
+        self.console.print()
+        self.console.print("[yellow]This server needs environment variables:[/]")
         for key, val in env_vars.items():
             self.console.print(f"  [bold]{key}[/] = {val}")
-        self.console.print("[dim]Set these before running, or we'll add 'em to your config.[/]")
+        self.console.print("[dim]Set these in your env or they'll be added to your client config.[/]")
 
 
 class Uninstaller:
@@ -124,7 +139,7 @@ class Uninstaller:
             self.console.print(f"[red]Unknown package type:[/] {pkg_type}")
             raise SystemExit(1)
 
-        self.console.print(f"[green]Removed {name}[/]")
+        self.console.print(f"  [green]Removed {name}[/]")
 
     def _uninstall_npm(self, package: str) -> None:
         if not shutil.which("npm"):
@@ -158,5 +173,5 @@ class Uninstaller:
         self.console.print(f"  {message}")
         try:
             subprocess.run(cmd, check=True)
-        except subprocess.CalledProcessError as e:
-            self.console.print(f"[yellow]Command failed (may already be removed):[/] {' '.join(cmd)}")
+        except subprocess.CalledProcessError:
+            self.console.print(f"[yellow]Command may have already been removed:[/] {' '.join(cmd)}")

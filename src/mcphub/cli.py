@@ -10,6 +10,7 @@ from rich.text import Text
 
 from mcphub.config import CACHE_DIR, ConfigManager
 from mcphub.installer import Installer, Uninstaller
+from mcphub.profile import ProfileManager
 from mcphub.registry import Registry
 from mcphub.runner import Runner
 from mcphub.scaffold import Scaffolder
@@ -18,13 +19,13 @@ app = typer.Typer(
     name="mcphub",
     help="MCP ecosystem toolkit — install, configure, and build MCP servers",
     no_args_is_help=True,
+    rich_markup_mode="rich",
 )
 
 console = Console()
 
 
 def _load_registry() -> Registry:
-    """Load registry from local cache, falling back to built-in."""
     cache = CACHE_DIR / "registry.json"
     if cache.exists():
         return Registry.load_local(cache)
@@ -34,9 +35,48 @@ def _load_registry() -> Registry:
 registry = _load_registry()
 
 
+# -------------------------------------------------------
+#  version check
+# -------------------------------------------------------
+
+def _show_version() -> str:
+    return __import__("mcphub").__version__
+
+
+def _check_for_updates() -> None:
+    """Check PyPI for newer versions (silent on failure, non-blocking)."""
+    import threading
+
+    from mcphub.update import check_version
+
+    def _run() -> None:
+        cache = CACHE_DIR / ".last_update_check"
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+        from mcphub import __version__ as cur
+
+        info = check_version(cur, cache, ttl=86400, timeout=2)
+        if info and info.is_outdated:
+            console.print(
+                f"\n[yellow]mcphub {info.latest} is available "
+                f"(you have {info.current}).[/] "
+                f"[dim]Run: pip install --upgrade mcphub[/]\n"
+            )
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+
+
+_check_for_updates()
+
+
+# -------------------------------------------------------
+#  callback
+# -------------------------------------------------------
+
 def _version_callback(value: bool) -> None:
     if value:
-        console.print(f"[bold]mcphub[/] version [cyan]{__import__('mcphub').__version__}[/]")
+        console.print(f"[bold]mcphub[/] version [cyan]{_show_version()}[/]")
         raise typer.Exit()
 
 
@@ -62,9 +102,7 @@ def main(
 def install(
     name: str = typer.Argument(..., help="MCP server name to install"),
     force: bool = typer.Option(False, "--force", "-f", help="Reinstall even if already present"),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", help="Show what would be done without actually doing it"
-    ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print commands without running"),
 ) -> None:
     """Install an MCP server from the registry."""
     entry = registry.get(name)
@@ -105,7 +143,6 @@ def search(
 
     if json_output:
         import json as _json
-
         console.print(_json.dumps(results, indent=2))
         return
 
@@ -175,7 +212,7 @@ def info(
         panel_content.append(f"  Subdir:      {entry['subdir']}\n")
     panel_content.append(f"  Command:     {entry['command']} {' '.join(entry.get('args', []))}\n")
     if entry.get("env"):
-        panel_content.append(f"  Env vars:\n")
+        panel_content.append("  Env vars:\n")
         for k, v in entry["env"].items():
             panel_content.append(f"    {k} = {v}\n")
 
@@ -205,8 +242,8 @@ def config(
             if not servers:
                 console.print("  [dim](no servers configured)[/]")
                 continue
-            for name, entry in servers.items():
-                console.print(f"  [cyan]{name}[/] → {entry.get('command', '?')}")
+            for n, entry in servers.items():
+                console.print(f"  [cyan]{n}[/] → {entry.get('command', '?')}")
         console.print()
         return
 
@@ -219,6 +256,48 @@ def config(
         display_path = str(path) if path else f"(expected: {info['name']} config dir)"
         console.print(f"  [cyan]{info['name']}[/]  {status}")
         console.print(f"    {display_path}")
+
+
+# -------------------------------------------------------
+#  profile
+# -------------------------------------------------------
+
+_profile_app = typer.Typer(help="Manage installation profiles")
+app.add_typer(_profile_app, name="profile")
+
+
+@_profile_app.command()
+def save(
+    name: str = typer.Argument(..., help="Profile name to save as"),
+) -> None:
+    """Save currently configured MCP servers as a named profile."""
+    profile = ProfileManager(console=console)
+    profile.save(name)
+
+
+@_profile_app.command()
+def load(
+    name: str = typer.Argument(..., help="Profile name to load"),
+) -> None:
+    """Load a saved profile into AI client configs."""
+    profile = ProfileManager(console=console)
+    profile.load(name)
+
+
+@_profile_app.command()
+def ls() -> None:
+    """List saved profiles."""
+    profile = ProfileManager(console=console)
+    profile.list_all()
+
+
+@_profile_app.command()
+def delete(
+    name: str = typer.Argument(..., help="Profile name to delete"),
+) -> None:
+    """Delete a saved profile."""
+    profile = ProfileManager(console=console)
+    profile.delete(name)
 
 
 # -------------------------------------------------------
@@ -267,7 +346,7 @@ def sync(
 @app.command()
 def run(
     name: str = typer.Argument(..., help="MCP server name to run"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Print the command without running it"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print the command without running"),
 ) -> None:
     """Run an installed MCP server."""
     entry = registry.get(name)
@@ -292,8 +371,10 @@ def run(
 @app.command()
 def uninstall(
     name: str = typer.Argument(..., help="MCP server name to uninstall"),
-    keep_config: bool = typer.Option(False, "--keep-config", help="Don't remove from AI client configs"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Show what would be done without doing it"),
+    keep_config: bool = typer.Option(
+        False, "--keep-config", help="Don't remove from AI client configs"
+    ),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print commands without running"),
 ) -> None:
     """Uninstall an MCP server and clean up configs."""
     entry = registry.get(name)
@@ -307,6 +388,37 @@ def uninstall(
     if not keep_config:
         config = ConfigManager(console=console)
         config.remove_server(name=entry["name"])
+
+
+# -------------------------------------------------------
+#  completion
+# -------------------------------------------------------
+
+@app.command(hidden=True)
+def completion(
+    shell: str = typer.Argument(..., help="Target shell: bash, zsh, fish, or powershell"),
+) -> None:
+    """Generate shell completion script. Pipe to the right location or eval."""
+    import sys
+    from subprocess import run
+
+    allowed = {"bash", "zsh", "fish", "powershell"}
+    if shell not in allowed:
+        console.print(f"[red]Unknown shell:[/] {shell}. Use one of: {', '.join(sorted(allowed))}")
+        raise typer.Exit(1)
+
+    # typer's internal completion mechanism uses the entry-point name
+    if shell in ("bash", "zsh"):
+        console.print(
+            f'[dim]# Add this to your shell config, or run:[/]\n'
+            f'[dim]#   eval "$(mcphub completion {shell})"[/]\n'
+        )
+
+    # Re-run ourselves to let typer handle it
+    run(
+        [sys.executable, "-m", "mcphub", "--show-completion", shell],
+        check=False,
+    )
 
 
 if __name__ == "__main__":
