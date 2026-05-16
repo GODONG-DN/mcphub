@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcphub"
+version = "0.1.0"
+description = "One-stop toolkit for the MCP ecosystem — install, configure, and build MCP servers"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [
+    { name = "GoDon", email = "godon@mcphub.dev" },
+]
+keywords = ["mcp", "model-context-protocol", "ai", "cli", "llm", "mcp-server"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "typer[all]>=0.12",
+    "rich>=13.0",
+    "httpx>=0.27",
+    "pyyaml>=6.0",
+    "tomli>=2.0; python_version < '3.11'",
+    "gitpython>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.3",
+]
+
+[project.scripts]
+mcphub = "mcphub.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/GODONG-DN/mcphub"
+Repository = "https://github.com/GODONG-DN/mcphub"
+Issues = "https://github.com/GODONG-DN/mcphub/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
