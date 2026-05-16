@@ -5,7 +5,7 @@ Thanks for wanting to improve MCPHub.
 ## Setup
 
 ```bash
-git clone https://github.com/GODONG-DN/mcphub.git
+git clone https://github.com/GODONG-DNG-DN/mcphub.git
 cd mcphub
 pip install -e ".[dev]"
 ```
@@ -28,7 +28,7 @@ pytest -v
 - Use `ruff` for linting: `ruff check src tests`
 - Line length: 100 chars
 - No docstrings on simple things, docstrings on tricky things
-- Keep it readable â€” don't over-engineer
+- Keep it readable â€?don't over-engineer
 
 ## Pull requests
 
@@ -40,4 +40,5 @@ pytest -v
 
 1. Update `__version__` in `src/mcphub/__init__.py`
 2. Update `version` in `pyproject.toml`
-3. Create a GitHub release â€” CI will publish to PyPI
+3. Create a GitHub release â€?CI will publish to PyPI
+

@@ -1,20 +1,20 @@
 # MCPHub
 
 > **One-stop toolkit for the MCP ecosystem.**
-> Install, configure, run, and build Model Context Protocol servers â€” from a single CLI.
+> Install, configure, run, and build Model Context Protocol servers â€?from a single CLI.
 
 <p align="center">
   <img src="https://img.shields.io/pypi/v/mcphub?color=success" alt="PyPI">
   <img src="https://img.shields.io/pypi/pyversions/mcphub" alt="Python">
-  <img src="https://img.shields.io/github/license/GODONG-DN/mcphub" alt="License">
-  <img src="https://img.shields.io/github/actions/workflow/status/GODONG-DN/mcphub/ci.yml?branch=master" alt="CI">
+  <img src="https://img.shields.io/github/license/GODONG-DNG-DN/mcphub" alt="License">
+  <img src="https://img.shields.io/github/actions/workflow/status/GODONG-DNG-DN/mcphub/ci.yml?branch=master" alt="CI">
 </p>
 
 ---
 
 ## What's MCP?
 
-[Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that lets AI models interact with external tools â€” file systems, databases, APIs, browsers, and more. Think of it as "USB-C for AI tools."
+[Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that lets AI models interact with external tools â€?file systems, databases, APIs, browsers, and more. Think of it as "USB-C for AI tools."
 
 The problem? **Setting up MCP servers is a pain.** You need to:
 
@@ -29,7 +29,7 @@ MCPHub solves all four with a single command:
 mcphub install github
 ```
 
-**Or install anything** â€” even if it's not in our registry:
+**Or install anything** â€?even if it's not in our registry:
 
 ```
 mcphub install @anthropic/server-filesystem     # any npm package
@@ -137,7 +137,7 @@ uv sync
 uv run my_server
 ```
 
-Gives you a working MCP server with a `hello` tool â€” ready to extend.
+Gives you a working MCP server with a `hello` tool â€?ready to extend.
 
 ---
 
@@ -146,7 +146,7 @@ Gives you a working MCP server with a `hello` tool â€” ready to extend.
 - [ ] Community registry submissions via PR
 - [ ] VS Code extension with GUI
 - [ ] Web dashboard for managing running servers
-- [ ] `mcphub publish` â€” push your own server to the registry
+- [ ] `mcphub publish` â€?push your own server to the registry
 
 ---
 
@@ -155,7 +155,7 @@ Gives you a working MCP server with a `hello` tool â€” ready to extend.
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ```bash
-git clone https://github.com/GODONG-DN/mcphub.git
+git clone https://github.com/GODONG-DNG-DN/mcphub.git
 cd mcphub
 pip install -e ".[dev]"
 pytest
@@ -165,4 +165,5 @@ pytest
 
 ## License
 
-MIT Â© [GoDon](https://github.com/GODONG-DN)
+MIT Â© [GODONG-DN](https://github.com/GODONG-DNG-DN)
+

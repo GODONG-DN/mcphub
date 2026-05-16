@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mcphub"
 version = "0.5.0"
-description = "One-stop toolkit for the MCP ecosystem â€” install, configure, and build MCP servers"
+description = "One-stop toolkit for the MCP ecosystem â€?install, configure, and build MCP servers"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 authors = [
-    { name = "GoDon", email = "godon@mcphub.dev" },
+    { name = "GODONG-DN", email = "GODONG-DN@mcphub.dev" },
 ]
 keywords = ["mcp", "model-context-protocol", "ai", "cli", "llm", "mcp-server"]
 classifiers = [
@@ -47,9 +47,9 @@ dev = [
 mcphub = "mcphub.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/GODONG-DN/mcphub"
-Repository = "https://github.com/GODONG-DN/mcphub"
-Issues = "https://github.com/GODONG-DN/mcphub/issues"
+Homepage = "https://github.com/GODONG-DNG-DN/mcphub"
+Repository = "https://github.com/GODONG-DNG-DN/mcphub"
+Issues = "https://github.com/GODONG-DNG-DN/mcphub/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -63,3 +63,4 @@ select = ["E", "F", "I", "N", "W", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
