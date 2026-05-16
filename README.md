@@ -1,7 +1,7 @@
 # MCPHub
 
 > **One-stop toolkit for the MCP ecosystem.**
-> Install, configure, run, and build Model Context Protocol servers â€?from a single CLI.
+> Install, configure, run, and build Model Context Protocol servers ï¿½?from a single CLI.
 
 <p align="center">
   <img src="https://img.shields.io/pypi/v/mcphub?color=success" alt="PyPI">
@@ -14,7 +14,7 @@
 
 ## What's MCP?
 
-[Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that lets AI models interact with external tools â€?file systems, databases, APIs, browsers, and more. Think of it as "USB-C for AI tools."
+[Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that lets AI models interact with external tools ï¿½?file systems, databases, APIs, browsers, and more. Think of it as "USB-C for AI tools."
 
 The problem? **Setting up MCP servers is a pain.** You need to:
 
@@ -29,7 +29,7 @@ MCPHub solves all four with a single command:
 mcphub install github
 ```
 
-**Or install anything** â€?even if it's not in our registry:
+**Or install anything** ï¿½?even if it's not in our registry:
 
 ```
 mcphub install @anthropic/server-filesystem     # any npm package
@@ -97,6 +97,7 @@ mcphub dev my-cool-tool
 | `mcphub profile` | Save/load/delete sets of server configs |
 | `mcphub dev <name>` | Scaffold a new MCP server project |
 | `mcphub doctor` | Check your system for MCP prerequisites |
+| `mcphub tui` | Launch interactive terminal UI (needs `pip install mcphub[tui]`) |
 
 ---
 
@@ -137,7 +138,7 @@ uv sync
 uv run my_server
 ```
 
-Gives you a working MCP server with a `hello` tool â€?ready to extend.
+Gives you a working MCP server with a `hello` tool ï¿½?ready to extend.
 
 ---
 
@@ -146,7 +147,7 @@ Gives you a working MCP server with a `hello` tool â€?ready to extend.
 - [ ] Community registry submissions via PR
 - [ ] VS Code extension with GUI
 - [ ] Web dashboard for managing running servers
-- [ ] `mcphub publish` â€?push your own server to the registry
+- [ ] `mcphub publish` ï¿½?push your own server to the registry
 
 ---
 
