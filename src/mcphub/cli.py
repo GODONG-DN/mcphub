@@ -8,9 +8,10 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from mcphub.config import ConfigManager
-from mcphub.installer import Installer
+from mcphub.config import CACHE_DIR, ConfigManager
+from mcphub.installer import Installer, Uninstaller
 from mcphub.registry import Registry
+from mcphub.runner import Runner
 from mcphub.scaffold import Scaffolder
 
 app = typer.Typer(
@@ -20,7 +21,17 @@ app = typer.Typer(
 )
 
 console = Console()
-registry = Registry()
+
+
+def _load_registry() -> Registry:
+    """Load registry from local cache, falling back to built-in."""
+    cache = CACHE_DIR / "registry.json"
+    if cache.exists():
+        return Registry.load_local(cache)
+    return Registry()
+
+
+registry = _load_registry()
 
 
 def _version_callback(value: bool) -> None:
@@ -222,6 +233,80 @@ def dev(
     """Scaffold a new MCP server project."""
     scaffolder = Scaffolder(console=console)
     scaffolder.create(name, target_dir=target)
+
+
+# -------------------------------------------------------
+#  sync
+# -------------------------------------------------------
+
+@app.command()
+def sync(
+    url: str = typer.Option(None, "--url", help="Custom registry URL"),
+) -> None:
+    """Fetch the latest registry from the remote server."""
+    console.print("\n[bold]Syncing registry...[/]")
+
+    try:
+        added = registry.sync(url=url) if url else registry.sync()
+        cache = CACHE_DIR / "registry.json"
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        registry.save_local(cache)
+        console.print(
+            f"\n[green]Done![/] {added} new server(s) added. "
+            f"Now tracking [bold]{registry.count}[/] servers."
+        )
+    except Exception as exc:
+        console.print(f"[red]Sync failed:[/] {exc}")
+        raise typer.Exit(1)
+
+
+# -------------------------------------------------------
+#  run
+# -------------------------------------------------------
+
+@app.command()
+def run(
+    name: str = typer.Argument(..., help="MCP server name to run"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Print the command without running it"),
+) -> None:
+    """Run an installed MCP server."""
+    entry = registry.get(name)
+    if entry is None:
+        console.print(f"[red]Unknown server:[/] {name}")
+        suggestions = registry.search(name, fuzzy=True)
+        if suggestions:
+            table = Table(title="Did you mean?", show_header=False, box=None)
+            for hit in suggestions:
+                table.add_row(f"  [cyan]mcphub run {hit['name']}[/]  {hit['description']}")
+            console.print(table)
+        raise typer.Exit(1)
+
+    runner = Runner(console=console, dry_run=dry_run)
+    runner.run(entry)
+
+
+# -------------------------------------------------------
+#  uninstall
+# -------------------------------------------------------
+
+@app.command()
+def uninstall(
+    name: str = typer.Argument(..., help="MCP server name to uninstall"),
+    keep_config: bool = typer.Option(False, "--keep-config", help="Don't remove from AI client configs"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Show what would be done without doing it"),
+) -> None:
+    """Uninstall an MCP server and clean up configs."""
+    entry = registry.get(name)
+    if entry is None:
+        console.print(f"[red]Unknown server:[/] {name}")
+        raise typer.Exit(1)
+
+    uninstaller = Uninstaller(console=console, dry_run=dry_run)
+    uninstaller.uninstall(entry)
+
+    if not keep_config:
+        config = ConfigManager(console=console)
+        config.remove_server(name=entry["name"])
 
 
 if __name__ == "__main__":

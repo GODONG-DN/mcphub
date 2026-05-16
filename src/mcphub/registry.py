@@ -2,7 +2,16 @@
 
 from __future__ import annotations
 
+import json
 from difflib import get_close_matches
+from pathlib import Path
+from typing import Any
+
+import httpx
+
+REMOTE_REGISTRY_URL = (
+    "https://raw.githubusercontent.com/GODONG-DN/mcphub/master/registry.json"
+)
 
 REGISTRY = [
     {
@@ -198,11 +207,15 @@ REGISTRY = [
 
 
 class Registry:
-    """In-memory registry that can later be extended with remote fetching."""
+    """Registry that merges built-in entries with optional remote listings."""
 
     def __init__(self, entries: list[dict] | None = None) -> None:
-        self._entries = entries or REGISTRY
+        self._entries = entries if entries is not None else list(REGISTRY)
         self._by_name: dict[str, dict] = {e["name"].lower(): e for e in self._entries}
+
+    @property
+    def count(self) -> int:
+        return len(self._entries)
 
     def get(self, name: str) -> dict | None:
         return self._by_name.get(name.lower())
@@ -237,3 +250,52 @@ class Registry:
         if tag is None:
             return list(self._entries)
         return [e for e in self._entries if tag in e.get("tags", [])]
+
+    def sync(
+        self,
+        url: str = REMOTE_REGISTRY_URL,
+        timeout: float = 10,
+    ) -> int:
+        """Fetch remote entries and merge into the local list.
+
+        Returns how many new entries were added.
+        """
+        try:
+            resp = httpx.get(url, timeout=timeout)
+            resp.raise_for_status()
+            remote = resp.json()
+        except Exception as exc:
+            raise RuntimeError(f"Failed to fetch registry from {url}: {exc}") from exc
+
+        if not isinstance(remote, list):
+            raise ValueError("Remote registry must be a JSON array of entries")
+
+        existing = set(self._by_name.keys())
+        added = 0
+
+        for entry in remote:
+            name = entry.get("name", "").lower()
+            if not name:
+                continue
+            if name not in existing:
+                self._entries.append(entry)
+                self._by_name[name] = entry
+                existing.add(name)
+                added += 1
+
+        return added
+
+    def save_local(self, path: Path) -> None:
+        """Persist the full registry to a local JSON file."""
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self._entries, f, indent=2)
+
+    @classmethod
+    def load_local(cls, path: Path) -> Registry:
+        """Create a Registry from a local JSON file, falling back to built-in."""
+        try:
+            with open(path, encoding="utf-8") as f:
+                entries = json.load(f)
+            return cls(entries=entries)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return cls()

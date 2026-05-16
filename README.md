@@ -1,17 +1,18 @@
 # MCPHub
 
 > **One-stop toolkit for the MCP ecosystem.**
-> Install, configure, and build Model Context Protocol servers — from a single CLI.
+> Install, configure, run, and build Model Context Protocol servers — from a single CLI.
 
 <p align="center">
   <img src="https://img.shields.io/pypi/v/mcphub?color=success" alt="PyPI">
   <img src="https://img.shields.io/pypi/pyversions/mcphub" alt="Python">
   <img src="https://img.shields.io/github/license/GODONG-DN/mcphub" alt="License">
+  <img src="https://img.shields.io/github/actions/workflow/status/GODONG-DN/mcphub/ci.yml?branch=master" alt="CI">
 </p>
 
 ---
 
-## What is MCP?
+## What's MCP?
 
 [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that lets AI models interact with external tools — file systems, databases, APIs, browsers, and more. Think of it as "USB-C for AI tools."
 
@@ -44,20 +45,27 @@ Or with [uv](https://docs.astral.sh/uv/):
 uv tool install mcphub
 ```
 
-### Basic usage
+### Usage
 
 ```bash
+# sync the latest registry
+mcphub sync
+
 # see what's available
 mcphub list
 
 # search for something specific
 mcphub search database
 
-# install and auto-configure
+# install, auto-configure, and run
 mcphub install postgres
+mcphub run postgres
 
 # look up details
 mcphub info filesystem
+
+# uninstall and clean up configs
+mcphub uninstall postgres
 
 # scaffold your own MCP server
 mcphub dev my-cool-tool
@@ -65,47 +73,47 @@ mcphub dev my-cool-tool
 
 ---
 
-## Why MCPHub?
+## Commands
 
-| Before | After |
-|---|---|
-| Find server repos manually | `mcphub search <keyword>` |
-| Read READMEs for install steps | `mcphub install <name>` |
-| Manually hand-edit 3 JSON configs | Auto-configured on install |
-| Debug env var issues | Reminders + auto-injection |
-| Start from scratch every time | `mcphub dev` scaffolds a project |
+| Command | What it does |
+|---------|-------------|
+| `mcphub list [--tag]` | List all available MCP servers |
+| `mcphub search <kw>` | Search by name, description, or tag |
+| `mcphub sync [--url]` | Pull the latest registry from remote |
+| `mcphub info <name>` | Show details: repo, command, env vars |
+| `mcphub install <name>` | Install and auto-configure AI clients |
+| `mcphub run <name>` | Launch an installed MCP server |
+| `mcphub uninstall <name>` | Remove the server and clean up configs |
+| `mcphub config [--list]` | Show AI client config locations and entries |
+| `mcphub dev <name>` | Scaffold a new MCP server project |
 
 ---
 
 ## Supported AI Clients
 
-MCPHub auto-detects and writes configs for:
+Auto-detect and auto-configure:
 
-| Client       | Config auto-detected |
-|-------------|---------------------|
-| Claude Desktop | Yes                  |
-| Cursor         | Yes                  |
-| Windsurf       | Soon                 |
-| Continue       | Soon                 |
+| Client | Supported |
+|--------|----------|
+| Claude Desktop | Yes |
+| Cursor | Yes |
+| Windsurf | Yes |
+| Continue | Yes |
 
-If your client isn't detected, `mcphub install` will print the exact JSON snippet to paste.
+If your client isn't detected, `mcphub install` prints the exact JSON snippet to paste.
 
 ---
 
 ## Built-in Registry
 
-Over a dozen MCP servers are indexed out of the box:
+17 MCP servers indexed out of the box:
 
-| Category   | Servers |
-|-----------|---------|
+| Category | Servers |
+|----------|---------|
 | **Official** | filesystem, github, brave-search, memory, puppeteer, postgres, slack, sqlite, docker, sequential-thinking, fetch, git, everything |
 | **Community** | mcp-hfspace (HuggingFace), mermaid, notion, playwright |
 
-```bash
-mcphub list
-mcphub list --tag official
-mcphub list --tag community
-```
+Run `mcphub sync` to pull updates we add between releases.
 
 ---
 
@@ -118,23 +126,22 @@ uv sync
 uv run my_server
 ```
 
-This gives you a working MCP server with a `hello` tool — ready to extend.
+Gives you a working MCP server with a `hello` tool — ready to extend.
 
 ---
 
 ## Roadmap
 
-- [ ] Remote registry with community submissions
-- [ ] `mcphub run` — one-command local server runner
 - [ ] `mcphub test` — test tools against an MCP server
-- [ ] VS Code extension for GUI installs
-- [ ] Support for Windsurf, Continue, and Zed
+- [ ] Community registry submissions
+- [ ] VS Code / JetBrains extensions
+- [ ] Health-check dashboard for running servers
 
 ---
 
 ## Contributing
 
-Bug reports, feature requests, and PRs are welcome.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ```bash
 git clone https://github.com/GODONG-DN/mcphub.git
