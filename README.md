@@ -29,6 +29,14 @@ MCPHub solves all four with a single command:
 mcphub install github
 ```
 
+**Or install anything** — even if it's not in our registry:
+
+```
+mcphub install @anthropic/server-filesystem     # any npm package
+mcphub install my-mcp-tool --type python         # any pip package
+mcphub install user/repo --type repo             # any GitHub repo
+```
+
 ---
 
 ## Quickstart
@@ -81,7 +89,7 @@ mcphub dev my-cool-tool
 | `mcphub search <kw>` | Search by name, description, or tag |
 | `mcphub sync` | Pull the latest registry from remote |
 | `mcphub info <name>` | Show details: repo, command, env vars |
-| `mcphub install <name>` | Install and auto-configure AI clients |
+| `mcphub install <target>` | Install from registry / npm / pip / GitHub repo |
 | `mcphub run <name>` | Launch an installed MCP server |
 | `mcphub test <name>` | Connect and list all tools a server exposes |
 | `mcphub uninstall <name>` | Remove the server and clean up configs |

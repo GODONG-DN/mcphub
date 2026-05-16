@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import tempfile
+from pathlib import Path
 
 from rich.console import Console
 
@@ -21,6 +23,8 @@ class Installer:
         package = entry["package"]
         command = entry["command"]
         args = entry.get("args", [])
+        tags = entry.get("tags", [])
+        clone_url = entry.get("repo", "")
 
         self.console.print(f"\n[bold]Installing [cyan]{name}[/]...[/]")
 
@@ -28,6 +32,8 @@ class Installer:
             self._install_npm(name, package, force)
         elif pkg_type == "python":
             self._install_python(name, package, force)
+        elif pkg_type == "repo":
+            self._install_from_repo(name, clone_url, force)
         else:
             self.console.print(f"[red]Unknown package type:[/] {pkg_type}")
             raise SystemExit(1)
@@ -43,6 +49,74 @@ class Installer:
             Panel(content, title="[bold green]Installed[/]", border_style="green", box=box.ROUNDED)
         )
         self._print_env_reminder(entry)
+
+    def _install_from_repo(self, name: str, url: str, force: bool) -> None:
+        """Clone a GitHub repo and auto-detect install method."""
+        if "github.com" not in url and "/" in url and not url.startswith("http"):
+            url = f"https://github.com/{url}"
+
+        if not url.startswith("http"):
+            self.console.print(f"[red]Invalid repo URL:[/] {url}")
+            raise SystemExit(1)
+
+        if self.dry_run:
+            self.console.print(f"  [dim](dry-run) Would clone:[/] {url}")
+            self.console.print("  [dim](dry-run) Would auto-detect and install[/]")
+            return
+
+        tmp = Path(tempfile.mkdtemp(prefix="mcphub-"))
+        try:
+            self.console.print(f"  Cloning {url}...")
+            subprocess.run(
+                ["git", "clone", "--depth=1", url, str(tmp)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            has_package_json = (tmp / "package.json").exists()
+            has_pyproject = (tmp / "pyproject.toml").exists()
+            has_setup_py = (tmp / "setup.py").exists()
+
+            if has_package_json:
+                self.console.print("  [dim]Detected npm project[/]")
+                subprocess.run(
+                    ["npm", "install", "-g", str(tmp)],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+            elif has_pyproject or has_setup_py:
+                self.console.print("  [dim]Detected Python project[/]")
+                pip = shutil.which("pip3") or shutil.which("pip")
+                if pip:
+                    subprocess.run(
+                        [pip, "install", "-e", str(tmp)],
+                        check=True,
+                        capture_output=True,
+                        text=True,
+                    )
+                else:
+                    self.console.print("[red]pip not found.[/]")
+                    raise SystemExit(1)
+            else:
+                self.console.print(
+                    "[yellow]Couldn't detect project type. Trying npm install...[/]"
+                )
+                subprocess.run(
+                    ["npm", "install", "-g", str(tmp)],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+        except subprocess.CalledProcessError as e:
+            self.console.print(f"[red]Failed to install from repo:[/] {e}")
+            raise SystemExit(1)
+        finally:
+            try:
+                shutil.rmtree(tmp, ignore_errors=True)
+            except Exception:
+                pass
 
     def _install_npm(self, name: str, package: str, force: bool) -> None:
         if not shutil.which("npm") and not shutil.which("npx"):

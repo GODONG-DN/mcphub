@@ -102,32 +102,111 @@ def main(
 
 @app.command()
 def install(
-    name: str = typer.Argument(..., help="MCP server name to install"),
+    target: str = typer.Argument(
+        ..., help="Registry name, npm package, pip package, or GitHub repo"
+    ),
+    type_: str = typer.Option(
+        None, "--type", "-t", help="Force package type: npm, python, or repo"
+    ),
+    name: str = typer.Option(
+        None, "--name", "-n", help="Server name for config (defaults to inferred name)"
+    ),
     force: bool = typer.Option(False, "--force", "-f", help="Reinstall even if already present"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Print commands without running"),
 ) -> None:
-    """Install an MCP server from the registry."""
-    entry = registry.get(name)
-    if entry is None:
-        console.print(f"[red]Unknown server:[/] {name}")
-        suggestions = registry.search(name, fuzzy=True)
-        if suggestions:
-            table = Table(title="Did you mean?", show_header=False, box=None)
-            for hit in suggestions:
-                table.add_row(f"  [cyan]mcphub install {hit['name']}[/]  {hit['description']}")
-            console.print(table)
-        raise typer.Exit(1)
+    """Install an MCP server — from registry, npm, pip, or GitHub.
 
+    Examples:
+        mcphub install github              # from built-in registry
+        mcphub install @acme/my-server     # npm package (auto-detected)
+        mcphub install my-server --type python  # pip package
+        mcphub install user/repo --type repo    # GitHub repo
+    """
     installer = Installer(console=console, dry_run=dry_run)
+
+    if type_ is None:
+        entry = _resolve_install_target(target)
+    else:
+        entry = _make_entry_from_target(target, type_)
+
     installer.install(entry, force=force)
 
     config = ConfigManager(console=console)
     config.add_server(
-        name=entry["name"],
+        name=name or entry["name"],
         command=entry["command"],
         args=entry.get("args", []),
         env=entry.get("env", {}),
     )
+
+
+def _resolve_install_target(target: str) -> dict:
+    """Smart resolution: registry lookup first, then auto-detect."""
+    entry = registry.get(target)
+    if entry is not None:
+        return entry
+
+    if target.startswith("@"):
+        return _make_entry_from_target(target, "npm")
+
+    if target.startswith("http://") or target.startswith("https://"):
+        return _make_entry_from_target(target, "repo")
+
+    if "/" in target and not target.startswith("@"):
+        return _make_entry_from_target(target, "repo")
+
+    # Last resort: try npm (most common), show tip for others
+    console.print(
+        f"[yellow]{target} not in registry, trying as npm package...[/]\n"
+        f"[dim]Tip: use --type python for pip packages, --type repo for GitHub repos[/]"
+    )
+    return _make_entry_from_target(target, "npm")
+
+
+def _make_entry_from_target(target: str, type_: str) -> dict:
+    """Build a registry-like entry dict from a raw target string."""
+    base_name = target.split("/")[-1].replace("@", "").rsplit("/", 1)[-1]
+
+    if type_ == "npm":
+        return {
+            "name": base_name,
+            "type": "npm",
+            "package": target,
+            "command": "npx",
+            "args": ["-y", target],
+            "tags": ["custom"],
+            "description": f"MCP server: {target}",
+            "repo": "unknown",
+        }
+    elif type_ == "python":
+        return {
+            "name": base_name,
+            "type": "python",
+            "package": target,
+            "command": "uvx",
+            "args": [target],
+            "tags": ["custom"],
+            "description": f"MCP server: {target}",
+            "repo": "unknown",
+        }
+    elif type_ == "repo":
+        repo_name = target.rstrip("/").split("/")[-1].replace(".git", "")
+        if target.startswith("http"):
+            parts = target.rstrip("/").split("/")
+            repo_name = parts[-1].replace(".git", "") or parts[-2]
+        return {
+            "name": repo_name,
+            "type": "repo",
+            "package": repo_name,
+            "command": "",
+            "args": [],
+            "tags": ["custom", "repo"],
+            "description": f"MCP server from {target}",
+            "repo": target,
+        }
+    else:
+        console.print(f"[red]Unknown type:[/] {type_}. Use npm, python, or repo.")
+        raise typer.Exit(1)
 
 
 # -------------------------------------------------------
@@ -209,7 +288,12 @@ def info(
     panel_content.append(f"  Description: {entry['description']}\n")
     panel_content.append(f"  Type:        {entry.get('type', 'npm')}\n")
     panel_content.append(f"  Package:     {entry['package']}\n")
-    panel_content.append(f"  Repository:  https://github.com/{entry['repo']}\n")
+    repo = entry.get("repo", "unknown")
+    if repo != "unknown":
+        if repo.startswith("http"):
+            panel_content.append(f"  Repository:  {repo}\n")
+        else:
+            panel_content.append(f"  Repository:  https://github.com/{repo}\n")
     if "subdir" in entry:
         panel_content.append(f"  Subdir:      {entry['subdir']}\n")
     panel_content.append(f"  Command:     {entry['command']} {' '.join(entry.get('args', []))}\n")
